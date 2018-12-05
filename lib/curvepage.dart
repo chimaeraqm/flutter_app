@@ -50,7 +50,7 @@ class _CurvePageState extends State<CurvePage> with TickerProviderStateMixin
     Widget beziercurve = Center(
         child: new CustomPaint(
           size: Size(200.0, 200.0),
-          painter: new BezierCurvePainter(currentHeight),
+          //painter: new BezierCurvePainter(/*currentHeight*/),
         )
 //      child: BezierCurveWidget(title,subtitle),
     );
@@ -114,12 +114,12 @@ class _CurvePageState extends State<CurvePage> with TickerProviderStateMixin
     super.dispose();
   }
 
-  void changeData() {
-    setState(() {
-      startHeight = currentHeight;
-      dataSet = random.nextInt(100);
-      endHeight = dataSet.toDouble();
-      animationController.forward(from: 0.0);
-    });
-  }
+//  void changeData() {
+//    setState(() {
+//      startHeight = currentHeight;
+//      dataSet = random.nextInt(100);
+//      endHeight = dataSet.toDouble();
+//      animationController.forward(from: 0.0);
+//    });
+//  }
 }
