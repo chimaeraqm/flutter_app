@@ -1,9 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'beziercurvewidget.dart';
-import 'beziercurvepainter.dart';
 import 'package:flutter/animation.dart';
 import 'dart:math';
-import 'dart:ui' show lerpDouble;
 
 class CurvePage extends StatefulWidget
 {
