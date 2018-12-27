@@ -55,7 +55,6 @@ class MyAppBar extends StatelessWidget
 
 class MyNewButton extends StatelessWidget
 {
-
   @override
   Widget build(BuildContext context) {
     return new GestureDetector(

@@ -7,7 +7,7 @@ void main()
   runApp(
       new MaterialApp(
         title: 'pick curves',
-        home: new TestMainPage(),
+        home: new MyApp(),
       )
   );
 }
@@ -19,6 +19,9 @@ class MyApp extends StatelessWidget {
   {
     return new MaterialApp(
       title: 'Startup Name Generator',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
       home: HomePage(),
     );
   }

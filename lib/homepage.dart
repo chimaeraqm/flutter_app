@@ -1,8 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/curvepage.dart';
-//import 'package:sky_engine/ui/ui.dart';
+import 'views/CustomStarView.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatefulWidget
+{
+  final String title;
+
+  HomePage({Key key,this.title}) : super(key:key);
 
   @override
   State createState() {
@@ -10,11 +16,27 @@ class HomePage extends StatefulWidget {
   }
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+{
+  Color _color = Color(0x60000000);
 
-  final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+  void _changeColor()
+  {
+    setState(() {
+      _color = pickRandomColor();
+    });
+  }
+
+  Color pickRandomColor()
+  {
+    Random random = new Random();
+    int r = 30 + random.nextInt(200);
+    int g = 30 + random.nextInt(200);
+    int b = 30 + random.nextInt(200);
+    return Color.fromARGB(255, r, g, b);
+  }
+
   // TODO Add build method
-
   @override
   Widget build(BuildContext context)
   {
@@ -30,10 +52,17 @@ class _HomePageState extends State<HomePage> {
 //              onPressed: _pushSaved),
 //        ],
         centerTitle: true,
-        backgroundColor: Colors.blueGrey,
+        //backgroundColor: Colors.blueGrey,
       ),
-//      body: _buildSuggestions(),
-      body: _buildMainBody(),
+      //body: _buildMainBody(),
+      body: CustomPaint(
+        painter: CustomStarView(context,_color),
+      ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: _changeColor,
+          tooltip: 'Please remove your strong fingler...',
+          child: Icon(Icons.cached),
+      ),
       drawer: _buildLeftDrawer(),
     );
   }
