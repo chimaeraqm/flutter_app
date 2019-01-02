@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/curvepage.dart';
-import 'views/CustomStarView.dart';
+import 'package:flutter_app/pages/curvepage.dart';
+import 'package:flutter_app/views/CustomStarView.dart';
 
 class HomePage extends StatefulWidget
 {
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage>
       ),
       //body: _buildMainBody(),
       body: CustomPaint(
-        painter: CustomStarView(context,_color),
+        painter: CustomStarView(context,5,25,new Color(0)),
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: _changeColor,
@@ -122,7 +122,8 @@ class _HomePageState extends State<HomePage>
         new PageRouteBuilder(
             opaque: false,
             pageBuilder: (BuildContext context, _, __){
-              return CurvePage(title: title,subtitle: subtitle,);
+//              return CurvePage(title: title,subtitle: subtitle,);
+                return CurvePage();
             },
             transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
               return new FadeTransition(

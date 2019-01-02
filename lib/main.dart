@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/homepage.dart';
-import 'package:flutter_app/TestMainPage.dart';
+import 'package:flutter_app/pages/homepage.dart';
+import 'package:flutter_app/pages/curvepage.dart';
+import 'package:flutter_app/pages/ballpage.dart';
 
 void main()
 {
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      //home: HomePage(),
+      home: BallPage(),
     );
   }
 }

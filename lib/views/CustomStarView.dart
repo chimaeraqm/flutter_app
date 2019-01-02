@@ -7,8 +7,11 @@ class CustomStarView extends CustomPainter
   Paint mGridPaint;
   Paint mStarPaint;
   BuildContext context;
+  double _R;
+  int _Angles;
+  Color _Color;
 
-  CustomStarView(this.context,Color color)
+  CustomStarView(this.context,int angles, double r,Color color)
   {
     mGridPaint = new Paint();
     mGridPaint.style = PaintingStyle.stroke;
@@ -19,37 +22,20 @@ class CustomStarView extends CustomPainter
     mStarPaint.style = PaintingStyle.fill;
     mStarPaint.color = color;
     mStarPaint.isAntiAlias = true;
+
+    _R = r;
+    _Angles = angles;
+    _Color = color;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     var winSize = MediaQuery.of(context).size;
-//    canvas.save();
     canvas.drawPath(gridPath(20,winSize), mGridPaint);
-//    canvas.restore();
 
-    canvas.translate(0, 160);
+    canvas.translate(100, 160);
     canvas.save();
-    for (int i = 5; i < 10; i++) {
-      canvas.translate(64, 0);
-      canvas.drawPath(starPath(i, 30, 15), mStarPaint);
-    }
-    canvas.restore();
-
-    canvas.translate(0, 70);
-    canvas.save();//绘制正n角星
-    for (int i = 5; i < 10; i++) {
-      canvas.translate(64, 0);
-      canvas.drawPath(regularStarPath(i, 30), mStarPaint);
-    }
-    canvas.restore();
-
-    canvas.translate(0, 70);
-    canvas.save();//绘制正n边形
-    for (int i = 5; i < 10; i++) {
-      canvas.translate(64, 0);
-      canvas.drawPath(regularPolygonPath(i, 30), mStarPaint);
-    }
+    canvas.drawPath(starPath(_Angles, _R, _R/2), mStarPaint);
     canvas.restore();
   }
 
