@@ -88,8 +88,6 @@ class _CurvePageState extends State<CurvePage> with SingleTickerProviderStateMix
     });
   }
 
-
-
   @override
   void dispose() {
     // TODO: implement dispose

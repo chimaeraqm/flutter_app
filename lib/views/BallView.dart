@@ -5,12 +5,13 @@ class RunBallView extends CustomPainter
 {
   Paint mPaint;
   BuildContext context;
-  Ball _ball;
+  var _balls = List<Ball>();//将_ball换成集合
+//  Ball _ball;
   Rect _limit;
 
-  RunBallView(this.context, Ball ball, Rect limit) {
+  RunBallView(this.context, List<Ball> balls, Rect limit) {
     mPaint = new Paint();
-    _ball = ball;
+    _balls = balls;
     _limit = limit;
   }
 
@@ -22,7 +23,7 @@ class RunBallView extends CustomPainter
     canvas.drawRect(_limit, mPaint);
 
     canvas.save();
-    drawBall(canvas, _ball);
+    drawBall(canvas, _balls);
     canvas.restore();
   }
 
@@ -31,8 +32,10 @@ class RunBallView extends CustomPainter
     return true;
   }
   //绘制小球
-  void drawBall(Canvas canvas, Ball ball) {
-    mPaint.color = ball.color;
-    canvas.drawCircle(Offset(ball.x, ball.y), ball.r, mPaint);
+  void drawBall(Canvas canvas, List<Ball> balls) {
+    _balls.forEach((ball){
+      mPaint.color = ball.color;
+      canvas.drawCircle(Offset(ball.x, ball.y), ball.r, mPaint);
+    });
   }
 }
