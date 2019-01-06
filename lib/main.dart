@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/BezierCurvePage.dart';
+import 'package:flutter_app/pages/curvepage.dart';
 
 void main()
 {
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      //home: HomePage(),
+      //home: CurvePage(),
       home: BezierCurvePage(),
     );
   }

@@ -31,7 +31,7 @@ class _CurvePageState extends State<CurvePage> with SingleTickerProviderStateMix
     // TODO: implement initState
     super.initState();
     controller = AnimationController(
-        duration:const Duration(milliseconds: 2000),
+        duration:const Duration(milliseconds: 200000),
         vsync: this);
     animation = Tween(
         begin: 25.0,

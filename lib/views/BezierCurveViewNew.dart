@@ -58,19 +58,15 @@ class BezierCurveViewNew extends CustomPainter
   Path mAdsLinePath;
 
   Paint mGridPaint;
-  double mGridGap_Width;
-  double mGridGap_Height;
 
-  double _time;
-
-  BezierCurveViewNew(this.mContext,double time,int level)
+  //BezierCurveViewNew(this.mContext,double second,int level)
+  BezierCurveViewNew(this.mContext,List<PointF> points,List<PointF> drawpoints,var constvalues)
   {
     adsLinePaints = List<Paint>();
     adsPointPaints = List<Paint>();
-    mPoints = List<PointF>();
-    drawPoints = List<PointF>();
-    _time = time;
-    _level = level;
+    mPoints = points;
+    drawPoints = drawpoints;
+    constValue = constvalues;
     initView();
   }
 
@@ -78,49 +74,13 @@ class BezierCurveViewNew extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-    //get mPoints and drawPoints based on _time
-    double finalX = 0;
-    double finalY = 0;
-    //level 临时计算bezier曲线的阶数
-    for(int i=0;i<mPoints.length;i++)
-    {
-      PointF pointi = mPoints[i];
-      double pointix = pointi.x;
-      double pointiy = pointi.y;
-      int param = constValue[i];
-      double x = param * pointix * pow(1-t,_level-i) * pow(t,i);
-      double y = param * pointiy * pow(1-t,_level-i) * pow(t,i);
-      finalX += x;
-      finalY += y;
-    }
-    var nextPoint = PointF(x:finalX,y:finalY);
-    drawPoints.add(nextPoint);
+
 
     //get canvas size
     var winSize = MediaQuery.of(mContext).size;
-    double height = winSize.height;
-    double width = winSize.width;
-    mGridGap_Width = width/10.0;
-    mGridGap_Height = height/10.0;
-    double gridWidth_a = mGridGap_Width;
-    double gridHeight_a = mGridGap_Height;
-    Path gridPath = new Path();
-    for(int i=0;i<9;i++)
-    {
-      //用纵横虚线划分绘图区域
-      gridPath.moveTo(gridWidth_a,0);
-      gridPath.lineTo(gridWidth_a,height);
-      canvas.drawPath(gridPath,mGridPaint);
-      gridPath.reset();
+    //用纵横虚线划分绘图区域
+    canvas.drawPath(gridPath(10,winSize), mGridPaint);
 
-      gridPath.moveTo(0,gridHeight_a);
-      gridPath.lineTo(width,gridHeight_a);
-      canvas.drawPath(gridPath,mGridPaint);
-      gridPath.reset();
-
-      gridWidth_a += mGridGap_Width;
-      gridHeight_a += mGridGap_Height;
-    }
     //mControlPointPaint绘制控制点，mTextPaint绘制控制点文字
     for(int i=0;i<mPoints.length;i++)
     {
@@ -203,14 +163,14 @@ class BezierCurveViewNew extends CustomPainter
         mBezierPath.lineTo(pointi.x,pointi.y);
       }
       canvas.drawPath(mBezierPath,mBezierPaint);
-      PointF tailPoint = drawPoints[drawPoints.size()-1];
+      PointF tailPoint = drawPoints[drawPoints.length-1];
       canvas.drawCircle(Offset(tailPoint.x,tailPoint.y),1,mBezierPointPaint);
     }
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-
+    return true;
   }
 
   void initView()
@@ -233,43 +193,41 @@ class BezierCurveViewNew extends CustomPainter
 
       mControlLinePaint = new Paint();
       mControlLinePaint.color = Colors.grey;
-      mControlLinePaint.strokeWidth = 8;
+      mControlLinePaint.strokeWidth = 4;
       mControlLinePaint.style = PaintingStyle.stroke;
       mControlLinePaint.isAntiAlias = true;
       mControlLinePaint.strokeCap = StrokeCap.round;
 
       mControlPointPaint = new Paint();
       mControlPointPaint.color = Colors.black;
-      mControlPointPaint.strokeWidth = 4;
       mControlPointPaint.style = PaintingStyle.stroke;
       mControlPointPaint.isAntiAlias = true;
       mControlPointPaint.strokeCap = StrokeCap.round;
 
       mBezierPaint = new Paint();
       mBezierPaint.color = Colors.red;
-      mBezierPaint.strokeWidth = 8;
+      mBezierPaint.strokeWidth = 4;
       mBezierPaint.style = PaintingStyle.stroke;
       mBezierPaint.isAntiAlias = true;
       mBezierPaint.strokeCap = StrokeCap.round;
 
       mBezierPointPaint = new Paint();
       mBezierPointPaint.color = Colors.black;
-      mBezierPointPaint.strokeWidth = 10;
-      mBezierPointPaint.style = PaintingStyle.fill;
+      mBezierPointPaint.strokeWidth = 4;
+      mBezierPointPaint.style = PaintingStyle.stroke;
       mBezierPointPaint.isAntiAlias = true;
       mBezierPointPaint.strokeCap = StrokeCap.round;
 
       mTextPaint = new Paint();
       mTextPaint.color = Colors.black;
-      mTextPaint.strokeWidth = 10;
-      mTextPaint.style = PaintingStyle.fill;
+      mTextPaint.style = PaintingStyle.stroke;
       mTextPaint.isAntiAlias = true;
       mTextPaint.strokeCap = StrokeCap.round;
 
       for (int i = 0; i < _level - 1; i++) {
         Paint adsLinePaint1 = new Paint();
         adsLinePaint1.color = colorList[i];
-        adsLinePaint1.strokeWidth = 8;
+        adsLinePaint1.strokeWidth = 4;
         adsLinePaint1.style = PaintingStyle.stroke;
         adsLinePaint1.isAntiAlias = true;
         adsLinePaint1.strokeCap = StrokeCap.round;
@@ -277,7 +235,7 @@ class BezierCurveViewNew extends CustomPainter
 
         Paint adsPointPaint1 = new Paint();
         adsPointPaint1.color = colorList[i];
-        adsPointPaint1.strokeWidth = 10;
+        adsPointPaint1.strokeWidth = 4;
         adsPointPaint1.style = PaintingStyle.fill;
         adsPointPaint1.isAntiAlias = true;
         adsPointPaint1.strokeCap = StrokeCap.round;
@@ -319,19 +277,19 @@ class BezierCurveViewNew extends CustomPainter
 
       mGridPaint = new Paint();
       mGridPaint.color = Color(0x60707070);
-      mGridPaint.strokeWidth = 4;
       mGridPaint.style = PaintingStyle.stroke;
       mGridPaint.isAntiAlias = true;
-      mGridPaint.strokeCap = StrokeCap.round;
     }
 
-    if (mPoints.length != _level + 1 || initCheck == true)
+    if (mPoints.length != _level + 1/* || initCheck == true*/)
     {
+      var winSize = MediaQuery.of(mContext).size;
+
       mPoints.clear();
       //初始化各点位置
-      double gap = 1000 / _level;
+      double gap = winSize.width / _level;
       for (int i = 0; i <= _level; i++) {
-        double xpos = centerX - 500 + gap * i;
+        double xpos = gap * i;
         double ypos = centerY;
         if(i == 1 || i == 2){
           ypos = 200;
@@ -340,7 +298,24 @@ class BezierCurveViewNew extends CustomPainter
         mPoints.add(point);
       }
     }
-    drawPoints.clear();
-    drawPoints.add(mPoints[0]);
+    if(drawPoints == null){
+      drawPoints.add(mPoints[0]);
+    }
+  }
+
+  Path gridPath(int step, Size winSize)
+  {
+    Path path = new Path();
+    for (int i = 0; i < winSize.height / step + 1; i++)
+    {
+      path.moveTo(0, step * i.toDouble());
+      path.lineTo(winSize.width, step * i.toDouble());
+    }
+
+    for (int i = 0; i < winSize.width / step + 1; i++) {
+      path.moveTo(step * i.toDouble(), 0);
+      path.lineTo(step * i.toDouble(), winSize.height);
+    }
+    return path;
   }
 }
