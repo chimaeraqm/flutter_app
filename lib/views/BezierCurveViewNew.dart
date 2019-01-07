@@ -6,10 +6,6 @@ import 'package:flutter_app/objs/PointF.dart';
 class BezierCurveViewNew extends CustomPainter
 {
   BuildContext mContext;
-  double centerX = 0;
-  double centerY = 0;
-  //用于fragment初次建立时，centerX和centerY初始化后控制点的重置
-  bool initCheck = false;
   /**
    * @param mPoints 保存控制点
    * @param drawPoints 所需绘制的点
@@ -17,20 +13,12 @@ class BezierCurveViewNew extends CustomPainter
    */
   var mPoints;
   var drawPoints;
-
   //t:曲线绘制的控制节点
   double t = 0;
-
   //根据杨辉三角设置的曲线计算常数
   var constValue;
-
   //bezier曲线的阶数
   int _level;
-
-  /**
-   * @ param pickTag 用于标记将要移动点的序号
-   */
-  int pickTag = -1;
 
   /**
    * 界面上绘制的图形包括
@@ -45,28 +33,33 @@ class BezierCurveViewNew extends CustomPainter
   //绘制各线的paint和path
   Paint mControlLinePaint;
   Paint mControlPointPaint;
-
   Paint mBezierPaint;
   Paint mBezierPointPaint;
-
   Paint mTextPaint;
+  Paint mGridPaint;
+
   var adsLinePaints;
   var adsPointPaints;
+  var adsLinePaintColors;
+  var adsPointPaintColors;
 
   Path mControlPath = new Path();
   Path mBezierPath;
   Path mAdsLinePath;
 
-  Paint mGridPaint;
 
   //BezierCurveViewNew(this.mContext,double second,int level)
-  BezierCurveViewNew(this.mContext,List<PointF> points,List<PointF> drawpoints,var constvalues)
+  BezierCurveViewNew(this.mContext,List<PointF> points,List<PointF> drawpoints,var constvalues,var adslinepaintcolors,var adspointpaintcolors,double time)
   {
     adsLinePaints = List<Paint>();
     adsPointPaints = List<Paint>();
     mPoints = points;
     drawPoints = drawpoints;
     constValue = constvalues;
+    adsLinePaintColors = adslinepaintcolors;
+    adsPointPaintColors = adspointpaintcolors;
+    _level = mPoints.length - 1;
+    t = time;
     initView();
   }
 
@@ -74,8 +67,6 @@ class BezierCurveViewNew extends CustomPainter
   @override
   void paint(Canvas canvas, Size size)
   {
-
-
     //get canvas size
     var winSize = MediaQuery.of(mContext).size;
     //用纵横虚线划分绘图区域
@@ -175,132 +166,69 @@ class BezierCurveViewNew extends CustomPainter
 
   void initView()
   {
-    if(_level < 2){
+    if(mPoints == null || mPoints.length == 0) {
       return;
     }
-    if (mPoints == null || mPoints.length != _level + 1) {
-      var colorList = [
-        Color(0x602828FF),
-        Color(0x600072E3),
-        Color(0x6000CACA),
-        Color(0x6002Df82),
-        Color(0x6000DB00),
-        Color(0x608CEA00),
-        Color(0x60C4C400),
-        Color(0x60D9B300),
-        Color(0x60FF8000)
-      ];
 
-      mControlLinePaint = new Paint();
-      mControlLinePaint.color = Colors.grey;
-      mControlLinePaint.strokeWidth = 4;
-      mControlLinePaint.style = PaintingStyle.stroke;
-      mControlLinePaint.isAntiAlias = true;
-      mControlLinePaint.strokeCap = StrokeCap.round;
+    mControlLinePaint = new Paint();
+    mControlLinePaint.color = Colors.grey;
+    mControlLinePaint.strokeWidth = 4;
+    mControlLinePaint.style = PaintingStyle.stroke;
+    mControlLinePaint.isAntiAlias = true;
+    mControlLinePaint.strokeCap = StrokeCap.round;
 
-      mControlPointPaint = new Paint();
-      mControlPointPaint.color = Colors.black;
-      mControlPointPaint.style = PaintingStyle.stroke;
-      mControlPointPaint.isAntiAlias = true;
-      mControlPointPaint.strokeCap = StrokeCap.round;
+    mControlPointPaint = new Paint();
+    mControlPointPaint.color = Colors.black;
+    mControlPointPaint.style = PaintingStyle.stroke;
+    mControlPointPaint.isAntiAlias = true;
+    mControlPointPaint.strokeCap = StrokeCap.round;
 
-      mBezierPaint = new Paint();
-      mBezierPaint.color = Colors.red;
-      mBezierPaint.strokeWidth = 4;
-      mBezierPaint.style = PaintingStyle.stroke;
-      mBezierPaint.isAntiAlias = true;
-      mBezierPaint.strokeCap = StrokeCap.round;
+    mBezierPaint = new Paint();
+    mBezierPaint.color = Colors.red;
+    mBezierPaint.strokeWidth = 4;
+    mBezierPaint.style = PaintingStyle.stroke;
+    mBezierPaint.isAntiAlias = true;
+    mBezierPaint.strokeCap = StrokeCap.round;
 
-      mBezierPointPaint = new Paint();
-      mBezierPointPaint.color = Colors.black;
-      mBezierPointPaint.strokeWidth = 4;
-      mBezierPointPaint.style = PaintingStyle.stroke;
-      mBezierPointPaint.isAntiAlias = true;
-      mBezierPointPaint.strokeCap = StrokeCap.round;
+    mBezierPointPaint = new Paint();
+    mBezierPointPaint.color = Colors.black;
+    mBezierPointPaint.strokeWidth = 4;
+    mBezierPointPaint.style = PaintingStyle.stroke;
+    mBezierPointPaint.isAntiAlias = true;
+    mBezierPointPaint.strokeCap = StrokeCap.round;
 
-      mTextPaint = new Paint();
-      mTextPaint.color = Colors.black;
-      mTextPaint.style = PaintingStyle.stroke;
-      mTextPaint.isAntiAlias = true;
-      mTextPaint.strokeCap = StrokeCap.round;
+    mTextPaint = new Paint();
+    mTextPaint.color = Colors.black;
+    mTextPaint.style = PaintingStyle.stroke;
+    mTextPaint.isAntiAlias = true;
+    mTextPaint.strokeCap = StrokeCap.round;
 
-      for (int i = 0; i < _level - 1; i++) {
-        Paint adsLinePaint1 = new Paint();
-        adsLinePaint1.color = colorList[i];
-        adsLinePaint1.strokeWidth = 4;
-        adsLinePaint1.style = PaintingStyle.stroke;
-        adsLinePaint1.isAntiAlias = true;
-        adsLinePaint1.strokeCap = StrokeCap.round;
-        adsLinePaints.add(adsLinePaint1);
+    for (int i = 0; i < _level - 1; i++) {
+      Paint adsLinePaint1 = new Paint();
+      adsLinePaint1.color = adsLinePaintColors[i];
+      adsLinePaint1.strokeWidth = 4;
+      adsLinePaint1.style = PaintingStyle.stroke;
+      adsLinePaint1.isAntiAlias = true;
+      adsLinePaint1.strokeCap = StrokeCap.round;
+      adsLinePaints.add(adsLinePaint1);
 
-        Paint adsPointPaint1 = new Paint();
-        adsPointPaint1.color = colorList[i];
-        adsPointPaint1.strokeWidth = 4;
-        adsPointPaint1.style = PaintingStyle.fill;
-        adsPointPaint1.isAntiAlias = true;
-        adsPointPaint1.strokeCap = StrokeCap.round;
-        adsPointPaints.add(adsPointPaint1);
-      }
-
-      mControlPath = new Path();
-      mBezierPath = new Path();
-      mAdsLinePath = new Path();
-
-      constValue = null;
-      if (_level == 2) {
-        constValue = [1, 2, 1];
-      }
-      else if (_level == 3) {
-        constValue = [1, 3, 3, 1];
-      }
-      else if (_level == 4) {
-        constValue = [1, 4, 6, 4, 1];
-      }
-      else if (_level == 5) {
-        constValue = [1, 5, 10, 10, 5, 1];
-      }
-      else if (_level == 6) {
-        constValue = [1, 6, 15, 20, 15, 6, 1];
-      }
-      else if (_level == 7) {
-        constValue = [1, 7, 21, 35, 35, 21, 7, 1];
-      }
-      else if (_level == 8) {
-        constValue = [1, 8, 28, 56, 70, 56, 28, 8, 1];
-      }
-      else if (_level == 9) {
-        constValue = [1, 9, 36, 84, 126, 126, 84, 36, 9, 1];
-      }
-      else if (_level == 10) {
-        constValue = [1, 10, 45, 120, 200, 252, 200, 120, 45, 10, 1];
-      }
-
-      mGridPaint = new Paint();
-      mGridPaint.color = Color(0x60707070);
-      mGridPaint.style = PaintingStyle.stroke;
-      mGridPaint.isAntiAlias = true;
+      Paint adsPointPaint1 = new Paint();
+      adsPointPaint1.color = adsPointPaintColors[i];
+      adsPointPaint1.strokeWidth = 4;
+      adsPointPaint1.style = PaintingStyle.fill;
+      adsPointPaint1.isAntiAlias = true;
+      adsPointPaint1.strokeCap = StrokeCap.round;
+      adsPointPaints.add(adsPointPaint1);
     }
 
-    if (mPoints.length != _level + 1/* || initCheck == true*/)
-    {
-      var winSize = MediaQuery.of(mContext).size;
+    mControlPath = new Path();
+    mBezierPath = new Path();
+    mAdsLinePath = new Path();
 
-      mPoints.clear();
-      //初始化各点位置
-      double gap = winSize.width / _level;
-      for (int i = 0; i <= _level; i++) {
-        double xpos = gap * i;
-        double ypos = centerY;
-        if(i == 1 || i == 2){
-          ypos = 200;
-        }
-        var point = PointF(x: xpos, y: ypos);
-        mPoints.add(point);
-      }
-    }
-    if(drawPoints == null){
-      drawPoints.add(mPoints[0]);
-    }
+    mGridPaint = new Paint();
+    mGridPaint.color = Color(0x60707070);
+    mGridPaint.style = PaintingStyle.stroke;
+    mGridPaint.isAntiAlias = true;
   }
 
   Path gridPath(int step, Size winSize)
@@ -318,4 +246,5 @@ class BezierCurveViewNew extends CustomPainter
     }
     return path;
   }
+
 }
