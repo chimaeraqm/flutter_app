@@ -33,8 +33,17 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
   Offset currentPos;
 
   //Control Param : check control points initialization status, if initStateCheck == true, initialize mPoints and drawPoints as well
-  //when get to point AnimationStatus.completed, initStateCheck = true;
+  //if initStateCheck == true，a new drawing process can be started over, all init parts should be initialized again.
   bool initStateCheck = true;
+
+  //Control Param : get rid of multi click in process of curve drawing
+  //if multiClickCheck == true，a new drawing process can be started over.
+  bool multiClickCheck = true;
+
+  //Control Param : check if the position of mPoints maintained
+  //if pntsPosChangedCheck == true，one or more points coordinates changed(but number of points stays the same).
+  //if initStateCheck switches to true, pntsPosChangedCheck switches to true as well.
+  bool pntsPosChangedCheck = true;
 
   @override
   void initState() {
@@ -56,7 +65,7 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
     })
     ..addStatusListener((status){
       if(status == AnimationStatus.completed){
-        initStateCheck = true;
+        multiClickCheck = true;
       }
     });
   }
@@ -71,32 +80,34 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    getInitConstValue();
-    getInitAdsColors();
     if(initStateCheck == true){
-
+      getInitPoints();
+      getInitConstValue();
+      getInitAdsColors();
+      initStateCheck = false;
     }
-    getInitPoints();
+
+    if(pntsPosChangedCheck == true){
+      drawPoints.clear();
+      drawPoints.add(mPoints[0]);
+      pntsPosChangedCheck = false;
+    }
 
     var appbar = AppBar(
-      title: Text("Bezier curve (lv 2)"),
+      title: Text("Bezier Curve"),
       backgroundColor: Color(0xff1989F9),
     );
 
     var floatingBn = FloatingActionButton(
       onPressed: (){
-        if(initStateCheck == true){
-          controller.reset();
-          mPoints.clear();
+        if(multiClickCheck == true){
           drawPoints.clear();
-          adsLinePaintColors.clear();
-          adsPointPaintColors.clear();
-          getInitPoints();
+          controller.reset();
           controller.forward();
-          initStateCheck = false;
+          multiClickCheck = false;
         }
       },
-      tooltip: 'Increment',
+      tooltip: 'Drawing',
       backgroundColor: Color(0xff1989F9),
       child: Icon(Icons.airplanemode_active),
     );
@@ -105,44 +116,84 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
       painter: BezierCurveViewNew(context,mPoints,drawPoints,constValue,adsLinePaintColors,adsPointPaintColors,_t),
     );
 
+    var drawerHeader = DrawerHeader(
+      padding: EdgeInsets.zero,
+      decoration: BoxDecoration(
+          image: new DecorationImage(
+            image: new ExactAssetImage('images/drawerheader_w800.jpg'),
+            fit: BoxFit.fill,)
+      ),
+      child: Container(
+        padding: EdgeInsets.all(8.0),
+//      padding: EdgeInsets.fromLTRB(double.infinity, double.infinity, 10.0, 10.0),
+        alignment: Alignment.bottomLeft,
+        child: new Directionality(
+          textDirection: TextDirection.ltr,
+          child: Text(
+            'Choose Curve Type here.\nThen click SIMU.',
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontFamily: 'Roboto',
+                fontSize: 20.0
+            ),
+          ),
+        ),
+      ),
+    );
+
+    drawItem(int level)
+    {
+      String title = 'BezierCurve('+level.toString()+')';
+      String subtitle = 'Create Lv'+level.toString()+' Bezier Curve';
+      return Container(
+        //width: 160.0,
+        child: new ListTile(
+          title: new Text(title),
+          subtitle: new Text(subtitle),
+          trailing: new Icon(Icons.blur_off),
+          onTap: (){
+            _level = level;
+            initStateCheck = true;
+            pntsPosChangedCheck = true;
+            Navigator.pop(context);
+            setState(() {
+
+            });
+            //_pushCurvePagewithAnimation(title,subtitle);
+//            _openNewPage();
+          },
+        ),
+      );
+    }
+
+    var drawer = Drawer(
+      child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            drawerHeader,
+//          userHeader,
+            drawItem(2),
+            drawItem(3),
+            drawItem(4),
+            drawItem(5),
+            drawItem(6),
+            drawItem(7),
+            drawItem(8),
+            drawItem(9),
+            drawItem(10),]
+      ),
+    );
+
     var mainScaffold = Scaffold(
       appBar: appbar,
       body: body,
       floatingActionButton: floatingBn,
+      drawer: drawer,
     );
 
     var gestureDetector = GestureDetector(
       child: mainScaffold,
-      onTap: (){
-        print("OnTap");
-        setState(() {
-
-        });
-      },
-      onTapDown: (pos){
-        print("onTapDown" + pos.globalPosition.toString());
-        setState(() {
-
-        });
-      },
-      onTapUp: (pos){
-        mPoints[pickTag] = PointF(x: currentPos.dx,y: currentPos.dy);
-        setState(() {
-
-        });
-      },
-      onTapCancel: (){
-        print("onTapCancel");
-        setState(() {
-
-        });
-      },
-      onPanStart: (pos){
-        print("onPanStart" + pos.globalPosition.toString());
-        setState(() {
-
-        });
-      },
       onPanDown: (pos){
         /**
          * @param distance 用于记录鼠标点击点和各控制点的距离，距离最近的点即为将要移动的点
@@ -175,6 +226,7 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
       },
       onPanEnd: (pos){
         mPoints[pickTag] = PointF(x: currentPos.dx,y: currentPos.dy);
+        pntsPosChangedCheck = true;
         setState(() {
 
         });
@@ -182,8 +234,8 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
       onPanCancel: (){
       },
       onPanUpdate: (pos){
-        print("onPanUpdate" + pos.globalPosition.toString());
         currentPos = pos.globalPosition;
+        mPoints[pickTag] = PointF(x: currentPos.dx,y: currentPos.dy);
         setState(() {
 
         });
@@ -244,6 +296,8 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
 
   void getInitAdsColors()
   {
+    adsLinePaintColors.clear();
+    adsPointPaintColors.clear();
     for (int i = 0; i < _level - 1; i++){
       adsLinePaintColors.add(pickRandomColor());
       adsPointPaintColors.add(pickRandomColor());
@@ -254,27 +308,15 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
   {
     //init mPoints
     mPoints.clear();
-    drawPoints.clear();
     var winSize = MediaQuery.of(context).size;
     //初始化各点位置
-    double gap = winSize.width / _level;
-    mPoints.add(PointF(x: 20, y: 20));
-    mPoints.add(PointF(x: gap + 10,y: 200));
-    mPoints.add(PointF(x: gap*2 - 10,y: 200));
-    mPoints.add(PointF(x: gap*3 - 20,y: 20));
-
-/*
+    double gap = (winSize.width-20) / _level;
     for (int i = 0; i <= _level; i++) {
-      double xpos = gap * i + 20;
-      double ypos = 20;
-      if(i == 1 || i == 2){
-        ypos = 200;
-      }
+      double xpos = 10+gap*i;
+      double ypos = winSize.height/2;
       var point = PointF(x: xpos, y: ypos);
       mPoints.add(point);
     }
-*/
-    drawPoints.add(mPoints[0]);
   }
 
   Color pickRandomColor()
@@ -283,7 +325,7 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
     int r = 30 + random.nextInt(200);
     int g = 30 + random.nextInt(200);
     int b = 30 + random.nextInt(200);
-    return Color.fromARGB(255, r, g, b);
+    return Color.fromARGB(60, r, g, b);
   }
 
   /**
@@ -293,5 +335,17 @@ class _BezierCurvePageState extends State<BezierCurvePage> with SingleTickerProv
   {
     double dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2));
     return dist;
+  }
+
+/**
+ * 封装控件
+ */
+
+  defineBackground(Widget w,)
+  {
+    return Container(
+        color: Colors.red,
+        child: w
+    );
   }
 }
